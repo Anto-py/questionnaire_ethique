@@ -1,0 +1,23 @@
+# Docs internes au vault — ne pas publier (seul README.md documente publiquement)
+CLAUDE.md
+AGENTS.md
+SPECS.md
+PLAN.md
+.env
+
+# Documents de conception / référence (internes)
+questionnaire_autopositionnement_IA_v2.md
+bareme_scoring_questionnaire_IA.md
+prompt_systeme_rapport_IA.md
+
+# Infra obsolète — l'app est 100 % statique, plus aucun backend
+server.py
+netlify.toml
+netlify/
+
+# Assets non utilisés
+background2.jpg
+
+# Système / éditeur
+.DS_Store
+.claude/

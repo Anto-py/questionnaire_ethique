@@ -465,40 +465,6 @@
       font-size: 15px;
     }
 
-    /* Loader */
-    .loader-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 24px;
-      padding: 80px 0;
-    }
-
-    .loader-orbe {
-      width: 72px;
-      height: 72px;
-      border: 4px solid var(--retro-teal);
-      border-top-color: var(--retro-orange);
-      border-radius: 50%;
-      animation: rotation 1s linear infinite;
-    }
-
-    @keyframes rotation {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .loader-texte {
-      font-family: Impact, sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--retro-teal);
-      font-size: 14px;
-      text-align: center;
-      min-height: 22px;
-    }
-
     /* Report screen */
     .rapport-columns {
       display: grid;
@@ -678,48 +644,6 @@
       fill: var(--retro-teal);
     }
 
-    /* Error */
-    .error-box {
-      background: rgba(228, 99, 46, 0.15);
-      border: 2px solid var(--retro-orange);
-      border-radius: 12px 4px 12px 4px;
-      padding: 16px 20px;
-      margin: 0;
-      color: var(--retro-paper);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    /* API key block */
-    .api-key-block {
-      background: rgba(227, 165, 53, 0.12);
-      border: 2px solid var(--retro-jaune);
-      border-radius: 12px 4px 12px 4px;
-      padding: 16px 20px;
-      margin: 20px 0;
-      font-size: 13px;
-    }
-
-    .api-key-block label {
-      font-family: Impact, sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--retro-teal);
-      display: block;
-      margin-bottom: 6px;
-      font-size: 12px;
-    }
-
-    .api-key-block input {
-      width: 100%;
-      border: 2px solid var(--retro-teal);
-      border-radius: 8px;
-      padding: 8px 10px;
-      font-family: monospace;
-      font-size: 13px;
-      background: var(--retro-paper);
-    }
-
     /* Print */
     @media print {
       body {
@@ -819,148 +743,11 @@
        CONFIGURATION
        ========================================================== */
     const CONFIG = {
-      API_MAX_TOKENS: 3000,
-      API_TEMPERATURE: 0.4,
-      API_KEY: '',           // Pré-remplir pour éviter la saisie aux participants
-      API_PROVIDER: '',      // 'anthropic' | 'openai' | 'compatible' — laisser vide pour détection auto
-      API_MODEL: '',         // Laisser vide pour utiliser le modèle par défaut du fournisseur
-      API_CUSTOM_URL: '',    // Uniquement pour 'compatible' (ex: https://api.mistral.ai/v1)
       NOM_FORMATEUR: '[À COMPLÉTER]',
       EMAIL_CONTACT: '[À COMPLÉTER]',
-      VERSION: '2.0',
-      DATE: '2025'
+      VERSION: '3.0',
+      DATE: '2026'
     };
-
-    /* Fournisseurs supportés */
-    const PROVIDERS = {
-      anthropic: {
-        label: 'Anthropic (Claude)',
-        url: 'https://api.anthropic.com/v1/messages',
-        defaultModel: 'claude-sonnet-4-6',
-        placeholder: 'sk-ant-...'
-      },
-      openai: {
-        label: 'OpenAI (GPT)',
-        url: 'https://api.openai.com/v1/chat/completions',
-        defaultModel: 'gpt-4o',
-        placeholder: 'sk-...'
-      },
-      compatible: {
-        label: 'Compatible OpenAI (Mistral, Groq, Ollama…)',
-        url: '',   // à saisir
-        defaultModel: '',
-        placeholder: 'Votre clé API'
-      }
-    };
-
-    function detecterProvider(key) {
-      if (!key) return 'anthropic';
-      if (key.startsWith('sk-ant-')) return 'anthropic';
-      if (key.startsWith('sk-') && !key.startsWith('sk-ant-')) return 'openai';
-      return 'compatible';
-    }
-
-    /* ==========================================================
-       PROMPT SYSTÈME (copié intégralement du fichier de référence)
-       ========================================================== */
-    const PROMPT_SYSTEME_INDIVIDUEL = `Tu es un assistant de formation spécialisé dans l'accompagnement professionnel des enseignants du secondaire en Fédération Wallonie-Bruxelles. Tu génères des rapports d'autopositionnement individuels à partir des résultats d'un questionnaire sur les enjeux de l'intelligence artificielle en éducation.
-
----
-
-CONTEXTE DE LA FORMATION
-
-La formation s'intitule « L'intelligence artificielle en éducation : cultiver un regard critique, éthique et sécurisé ». Elle dure deux jours et est structurée autour de quatre temps progressifs :
-- COMPRENDRE : enjeux éthiques, cadre juridique (RGPD, AI Act, droit d'auteur)
-- VÉRIFIER : fonctionnement de l'IA, hallucinations, biais, idéologies des modèles, grille PROMPT
-- PROTÉGER : sobriété écologique, cybersécurité, cyber-résilience
-- DÉCIDER : enjeux démocratiques et géopolitiques, charte d'utilisation, feuille de route personnelle
-
-L'esprit critique est le fil conducteur transversal de toute la formation.
-
----
-
-TON RÔLE
-
-À partir des données JSON fournies par l'utilisateur, tu génères un rapport individuel d'autopositionnement qui :
-1. Nomme clairement les profils dominants et les angles morts du participant
-2. Explique ce que ces résultats signifient concrètement pour sa pratique d'enseignant
-3. Crée un besoin d'apprendre en montrant l'écart entre sa situation actuelle et ce que la formation va lui apporter
-4. Propose une lecture personnalisée des deux journées selon son profil
-5. Intègre les réponses ouvertes pour personnaliser le ton et les exemples
-
----
-
-RÈGLES ABSOLUES
-
-1. NE JAMAIS formuler le rapport comme un jugement de valeur ou une évaluation de compétence. Utilise exclusivement le registre du besoin de formation et de la prise de conscience.
-
-2. NE JAMAIS utiliser les mots « faible », « mauvais », « insuffisant », « échec » ou tout terme dévalorisent. Utilise à la place : « angle mort », « enjeu à explorer », « terrain à développer », « dimension encore peu investie ».
-
-3. NE JAMAIS présenter un enjeu avec un score bas comme une lacune personnelle. Présente-le comme une opportunité offerte par la formation.
-
-4. TOUJOURS ancrer chaque commentaire dans la réalité professionnelle de l'enseignant du secondaire en FWB, avec des exemples concrets liés à la classe, aux élèves, aux collègues, à l'établissement.
-
-5. TOUJOURS terminer chaque section par une phrase qui crée un pont explicite avec une séquence ou une activité de la formation (mentionner COMPRENDRE / VÉRIFIER / PROTÉGER / DÉCIDER selon pertinence).
-
-6. ADAPTER le registre au profil d'entrée :
-   - debutant : ton rassurant, exemples très concrets, éviter le jargon
-   - observateur : ton encourageant, valoriser la curiosité, montrer l'accessibilité
-   - experimentateur : ton stimulant, reconnaître les pratiques existantes, pointer les angles morts
-   - integrateur : ton de pair à pair, reconnaître la maîtrise, pointer les enjeux systémiques et politiques
-
-7. NE JAMAIS inventer des informations sur le participant. Te limiter strictement aux données fournies.
-
-8. Si une réponse ouverte est vide ou non renseignée, ignorer ce champ sans le signaler.
-
----
-
-STRUCTURE DU RAPPORT À PRODUIRE
-
-Le rapport est structuré en 5 parties. Respecte cette structure sans la modifier.
-
-### PARTIE 1 — Ton profil en un coup d'œil (max. 80 mots)
-Un paragraphe synthétique qui résume le profil global en langage naturel. Citer les 2 profils dominants et les 2 angles morts. Utiliser une métaphore ou une image concrète si possible. Ne pas lister des scores bruts.
-
-### PARTIE 2 — Tes points d'appui (max. 150 mots)
-Développer les 2 enjeux avec les scores les plus élevés. Pour chacun :
-- Ce que le score révèle de la pratique actuelle
-- Un exemple concret lié à l'enseignement en secondaire
-- Ce que la formation va permettre d'approfondir ou de structurer
-
-### PARTIE 3 — Tes angles morts (max. 200 mots)
-Développer les 2 enjeux avec les scores les plus faibles. Pour chacun :
-- Ce que l'angle mort signifie concrètement dans la pratique quotidienne
-- Un exemple de situation où cet angle mort peut avoir des conséquences
-- Ce que la formation va apporter sur cet enjeu spécifiquement
-- Le lien explicite avec une séquence ou une activité de la formation
-
-Note : si l'Esprit critique figure parmi les angles morts, le signaler explicitement comme priorité et fil conducteur de toute la formation.
-
-### PARTIE 4 — Ce que tu m'as dit (max. 150 mots)
-Intégrer les réponses ouvertes de manière fluide, sans les citer mot pour mot.
-- Reformuler ce que le participant a exprimé dans ses réponses ouvertes
-- Montrer que ces préoccupations ou questions sont légitimes et seront traitées
-- Créer un lien entre ce que le participant « apporte » et ce que la formation va lui donner
-Si les réponses ouvertes sont toutes vides, remplacer par : « Tu as choisi de ne pas répondre aux questions ouvertes. C'est tout à fait normal pour un premier contact avec ces enjeux. La formation te donnera de nombreuses occasions d'exprimer tes questions au fil des deux journées. »
-
-### PARTIE 5 — Ta feuille de route pour les deux jours (max. 150 mots)
-Une lecture personnalisée de la formation selon le profil :
-- Quelles séquences seront les plus confortables (profils dominants)
-- Quelles séquences méritent une attention particulière (angles morts)
-- Un conseil pratique et concret pour tirer le meilleur parti des deux journées
-- Une phrase de conclusion qui donne envie de commencer
-
----
-
-FORMAT DE SORTIE
-
-- Markdown structuré avec les 5 titres de section
-- Longueur totale : 600 à 750 mots
-- Langue : français, registre professionnel bienveillant
-- Pas de listes à puces dans les parties 1, 4 et 5
-- Des listes à puces courtes sont acceptées dans les parties 2 et 3 pour structurer les deux enjeux
-- Ne pas inclure de scores numériques dans le texte du rapport
-- Ne pas mentionner le nom de l'outil ou du questionnaire dans le corps du rapport`;
 
     /* ==========================================================
        STRUCTURE DU QUESTIONNAIRE
@@ -1380,14 +1167,6 @@ FORMAT DE SORTIE
     const state = {
       ecranActuel: 0,
       consentement: false,
-      sansIA: false,
-      netlifyMode: false,
-      apiKey: CONFIG.API_KEY || '',
-      apiProvider: CONFIG.API_PROVIDER || '',
-      apiModel: CONFIG.API_MODEL || '',
-      apiCustomUrl: CONFIG.API_CUSTOM_URL || '',
-      profil_entree: null,
-      contexte_ecole: null,
       reponses: {},
       scores: {
         ethique: null, juridique: null, ecologique: null, esprit_critique: null,
@@ -1396,15 +1175,13 @@ FORMAT DE SORTIE
       scores_normalises: {},
       profils_dominants: [],
       angles_morts: [],
-      reponses_ouvertes: { E7: '', J7: '', Eco7: '', EC7: '', CS7: '', D7: '', G7: '' },
-      boussole: { B1_dominants: '', B2_angles_morts: '', B3_attente: '', B4_question: '' },
-      rapport: '',
-      rapportError: null,
-      session_id: null
+      quizOrder: []
     };
 
-    const mappingM1 = { A: 'debutant', B: 'observateur', C: 'experimentateur', D: 'integrateur' };
-    const mappingM2 = { A: 'absent', B: 'evite', C: 'emergent', D: 'present' };
+    // Le rapport (radar + feedbacks) suit immédiatement la dernière question.
+    const ECRAN = {
+      get rapport() { return state.quizOrder.length + 1; }
+    };
 
     /* ==========================================================
        UTILITAIRES
@@ -1476,158 +1253,139 @@ FORMAT DE SORTIE
     }
 
     /* ==========================================================
-       GÉNÉRATION DU RAPPORT — 3 modes selon le contexte
-       1. Netlify Function (clé sécurisée côté serveur)
-       2. Proxy local server.py
-       3. Appel direct avec clé utilisateur (fallback)
+       FEEDBACKS DÉTERMINÉS PAR LE SCORING (aucun appel réseau)
+       Registre : besoin de formation et prise de conscience.
+       Jamais de jugement de valeur — un score bas = un enjeu à explorer.
+       Chaque enjeu pointe vers un temps de la formation :
+       COMPRENDRE · VÉRIFIER · PROTÉGER · DÉCIDER.
        ========================================================== */
-    async function genererRapportIndividuel() {
-      const userPayload = {
-        profil_entree: state.profil_entree,
-        contexte_ecole: state.contexte_ecole,
-        scores: state.scores,
-        profils_dominants: state.profils_dominants,
-        angles_morts: state.angles_morts,
-        reponses_ouvertes: state.reponses_ouvertes,
-        boussole: state.boussole
-      };
-
-      // — Mode 1 : Netlify Function —
-      try {
-        const r = await fetch('/.netlify/functions/proxy', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemPrompt: PROMPT_SYSTEME_INDIVIDUEL,
-            userContent: JSON.stringify(userPayload)
-          })
-        });
-        // 404 ou 405 = pas sur Netlify → on passe au mode suivant
-        if (r.status === 404 || r.status === 405) throw new Error('netlify_unavailable');
-        if (!r.ok) {
-          const e = await r.json().catch(() => ({}));
-          throw new Error(e?.error?.message || `Netlify proxy ${r.status}`);
+    const FEEDBACK = {
+      ethique: {
+        sequence: 'COMPRENDRE',
+        appui: "Vous percevez déjà la dimension éthique de vos usages — transparence envers les familles, responsabilité dans le choix des outils. La formation transformera ces intuitions en repères partageables avec vos collègues (temps COMPRENDRE).",
+        angleMort: "L'éthique de l'IA touche des gestes quotidiens : déclarer un usage à vos élèves, décider ce qui peut nourrir un outil grand public. Le temps COMPRENDRE vous outillera pour poser ces choix sans naviguer à vue.",
+        bands: {
+          haut: "Vous avez déjà des repères sur la responsabilité et la transparence. La formation viendra les structurer et les confronter à des cas concrets de classe.",
+          moyen: "Vous sentez les enjeux éthiques sans toujours disposer d'un cadre pour trancher. Le temps COMPRENDRE vous donnera des critères de décision.",
+          bas: "L'éthique de l'IA reste un terrain à investir — c'est précisément ce que le temps COMPRENDRE ouvrira, à partir de situations vécues en classe."
         }
-        const d = await r.json();
-        return d.text;
-      } catch (err) {
-        if (err.message !== 'netlify_unavailable' && !err.message.includes('Failed to fetch')) throw err;
-      }
-
-      // — Mode 2 : proxy local server.py —
-      const provider = state.apiProvider || detecterProvider(state.apiKey);
-      const pconf = PROVIDERS[provider] || PROVIDERS.anthropic;
-      const model = state.apiModel || pconf.defaultModel;
-      const apiUrl = provider === 'compatible'
-        ? (state.apiCustomUrl.replace(/\/$/, '') + '/chat/completions')
-        : pconf.url;
-
-      const isAnthropic = provider === 'anthropic';
-      const apiBody = isAnthropic
-        ? {
-          model, max_tokens: CONFIG.API_MAX_TOKENS, temperature: CONFIG.API_TEMPERATURE,
-          system: PROMPT_SYSTEME_INDIVIDUEL,
-          messages: [{ role: 'user', content: JSON.stringify(userPayload) }]
+      },
+      juridique: {
+        sequence: 'COMPRENDRE',
+        appui: "Le cadre légal (RGPD, AI Act, droit d'auteur) ne vous est pas étranger. La formation consolidera ces acquis et lèvera les zones de flou qui subsistent (temps COMPRENDRE).",
+        angleMort: "RGPD, AI Act, droit d'auteur encadrent déjà vos usages, parfois à votre insu — données d'élèves dans un prompt, image générée distribuée en classe. Le temps COMPRENDRE clarifiera ce qui est permis.",
+        bands: {
+          haut: "Vous situez vos usages dans le cadre légal. La formation affinera les cas limites (droit d'auteur, données d'élèves).",
+          moyen: "Vous connaissez l'existence des règles sans toujours pouvoir les appliquer. Le temps COMPRENDRE rendra le cadre opérationnel.",
+          bas: "Le cadre juridique est encore à découvrir — la formation en fera un repère utilisable au quotidien, pas un texte abstrait."
         }
-        : {
-          model, max_tokens: CONFIG.API_MAX_TOKENS, temperature: CONFIG.API_TEMPERATURE,
-          messages: [{ role: 'system', content: PROMPT_SYSTEME_INDIVIDUEL },
-          { role: 'user', content: JSON.stringify(userPayload) }]
-        };
-      const apiHeaders = isAnthropic
-        ? { 'x-api-key': state.apiKey, 'anthropic-version': '2023-06-01' }
-        : { 'Authorization': 'Bearer ' + state.apiKey };
-
-      try {
-        const r = await fetch('/api/proxy', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: apiUrl, headers: apiHeaders, body: apiBody })
-        });
-        if (r.status !== 404 && r.status !== 405 && r.status !== 0) {
-          if (!r.ok) {
-            const e = await r.json().catch(() => ({}));
-            throw new Error(e?.error?.message || `Proxy local ${r.status}`);
-          }
-          const d = await r.json();
-          return isAnthropic ? d.content[0].text : d.choices[0].message.content;
+      },
+      ecologique: {
+        sequence: 'PROTÉGER',
+        appui: "Vous intégrez déjà la sobriété numérique à votre regard sur l'IA. La formation vous donnera des leviers concrets pour en faire un sujet de classe (temps PROTÉGER).",
+        angleMort: "L'empreinte de l'IA (énergie, eau, minerais) est peu présente dans vos réponses. Le temps PROTÉGER montrera comment en faire un argument pédagogique, sans culpabilisation.",
+        bands: {
+          haut: "La dimension écologique guide déjà certains de vos choix. La formation vous proposera des outils (comparateurs d'empreinte) pour la transmettre.",
+          moyen: "Vous avez conscience du coût environnemental sans toujours l'intégrer à vos usages. Le temps PROTÉGER comblera l'écart entre savoir et faire.",
+          bas: "Le coût écologique de l'IA est un angle à explorer — la formation en fera un levier concret pour la classe."
         }
-      } catch (err) {
-        if (!err.message.includes('Failed to fetch') && !err.message.includes('404') && !err.message.includes('405')) throw err;
+      },
+      esprit_critique: {
+        sequence: 'VÉRIFIER',
+        appui: "Vous ne prenez pas les productions de l'IA pour argent comptant — vérification, conscience des hallucinations et des biais. La formation systématisera ces réflexes avec la grille PROMPT (temps VÉRIFIER).",
+        angleMort: "L'esprit critique est le fil conducteur de toute la formation. Hallucinations, biais, idéologies des modèles : le temps VÉRIFIER en fait une priorité, car c'est la compétence qui conditionne toutes les autres.",
+        bands: {
+          haut: "Vous doutez intelligemment des sorties de l'IA. La formation outillera ce réflexe (grille PROMPT) pour l'enseigner à vos élèves.",
+          moyen: "Vous savez que l'IA peut se tromper sans toujours savoir où regarder. Le temps VÉRIFIER vous donnera une méthode.",
+          bas: "L'esprit critique face à l'IA est le cœur de la formation — c'est le fil rouge des deux journées, à partir de cas concrets."
+        }
+      },
+      cybersecurite: {
+        sequence: 'PROTÉGER',
+        appui: "Vous avez des réflexes de prudence (vérification des données collectées, méfiance face aux messages suspects). La formation les complètera face aux menaces amplifiées par l'IA (temps PROTÉGER).",
+        angleMort: "Phishing hyper-personnalisé, clonage vocal, deepfakes : l'IA renouvelle les menaces et les anciens repères ne suffisent plus. Le temps PROTÉGER vous donnera des réflexes actualisés.",
+        bands: {
+          haut: "Vous avez déjà des réflexes de cybersécurité. La formation les adaptera aux nouvelles attaques rendues possibles par l'IA.",
+          moyen: "Vous percevez les risques sans toujours savoir vous en prémunir. Le temps PROTÉGER actualisera vos repères.",
+          bas: "La cybersécurité à l'ère de l'IA est un terrain à développer — la formation partira de scénarios concrets (faux mail de direction, clonage vocal)."
+        }
+      },
+      democratique: {
+        sequence: 'DÉCIDER',
+        appui: "Vous mesurez les enjeux démocratiques de l'IA (désinformation, bulles de filtre) et le rôle de l'école. La formation prolongera cette lucidité vers des pratiques de classe (temps DÉCIDER).",
+        angleMort: "Deepfakes, manipulation de l'opinion, dividende du menteur : l'IA pèse sur la citoyenneté. Le temps DÉCIDER explorera le rôle spécifique de l'école sur ce terrain.",
+        bands: {
+          haut: "Vous percevez clairement les enjeux démocratiques. La formation vous aidera à les traduire en séquences pour vos élèves.",
+          moyen: "Vous sentez l'enjeu citoyen sans l'avoir encore outillé. Le temps DÉCIDER vous donnera des pistes pour la classe.",
+          bas: "Le rôle de l'IA dans la vie démocratique est un angle à investir — la formation en fera un objet d'enseignement concret."
+        }
+      },
+      geopolitique: {
+        sequence: 'DÉCIDER',
+        appui: "Vous voyez la dimension politique du choix des outils (souveraineté, données, dépendance). La formation enrichira cette grille de lecture (temps DÉCIDER).",
+        angleMort: "Qui développe l'IA que vous utilisez, où vont les données, à qui donnez-vous du pouvoir ? Ces questions sont peu présentes dans vos réponses. Le temps DÉCIDER ouvrira cette perspective.",
+        bands: {
+          haut: "Vous lisez déjà l'IA comme un enjeu de pouvoir et de souveraineté. La formation approfondira les alternatives européennes.",
+          moyen: "Vous percevez l'enjeu géopolitique sans en avoir fait un critère de choix. Le temps DÉCIDER vous y aidera.",
+          bas: "La géopolitique de l'IA — souveraineté, dépendance, données — est un angle à explorer, que la formation rendra tangible."
+        }
       }
+    };
 
-      // — Mode 3 : appel direct (fallback) —
-      const r = await fetch(apiUrl, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json',
-          ...apiHeaders,
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify(apiBody)
-      });
-      if (!r.ok) {
-        const e = await r.json().catch(() => ({}));
-        throw new Error(e?.error?.message || `API ${r.status}`);
-      }
-      const d = await r.json();
-      return isAnthropic ? d.content[0].text : d.choices[0].message.content;
+    const ORDRE_ENJEUX = ['ethique', 'juridique', 'ecologique', 'esprit_critique', 'cybersecurite', 'democratique', 'geopolitique'];
+
+    function paletteBand(v) { return v >= 67 ? 'haut' : v >= 34 ? 'moyen' : 'bas'; }
+
+    // Construit le HTML du rapport : synthèse globale + feedback par enjeu.
+    function buildFeedbackHTML() {
+      const dom = state.profils_dominants;
+      const ang = state.angles_morts;
+      const nom = id => NOM_ENJEUX_AFFICHE[id];
+
+      // — Synthèse : profil global —
+      const profilGlobal = `Vos réponses dessinent une carte personnelle. Vos terrains les plus investis : <strong>${nom(dom[0])}</strong> et <strong>${nom(dom[1])}</strong> — des points d'appui sur lesquels la formation pourra prendre élan. Vos enjeux les moins explorés : <strong>${nom(ang[0])}</strong> et <strong>${nom(ang[1])}</strong> — non pas des lacunes, mais des opportunités que les deux journées viendront ouvrir. Aucun profil n'est complet, et c'est justement ce qui rend la formation utile.`;
+
+      // — Points d'appui (2 scores les plus hauts) —
+      const appuis = dom.map(id => `
+        <h3>${nom(id)} · ${state.scores_normalises[id]}%</h3>
+        <p>${FEEDBACK[id].appui}</p>
+      `).join('');
+
+      // — Angles morts (2 scores les plus bas) —
+      const morts = ang.map(id => `
+        <h3>${nom(id)} · ${state.scores_normalises[id]}%</h3>
+        <p>${FEEDBACK[id].angleMort}</p>
+      `).join('');
+
+      const noteEC = ang.includes('esprit_critique')
+        ? `<p><em>L'esprit critique figure parmi vos angles morts : c'est le fil conducteur de toute la formation, donnez-y une attention prioritaire.</em></p>`
+        : '';
+
+      // — Feedback enjeu par enjeu (les 7, dans l'ordre fixe) —
+      const parEnjeu = ORDRE_ENJEUX.map(id => {
+        const v = state.scores_normalises[id] || 0;
+        return `
+          <h3>${nom(id)} · ${v}%</h3>
+          <p>${FEEDBACK[id].bands[paletteBand(v)]}</p>
+        `;
+      }).join('');
+
+      return `
+        <h2>Votre profil en un coup d'œil</h2>
+        <p>${profilGlobal}</p>
+
+        <h2>Vos points d'appui</h2>
+        ${appuis}
+
+        <h2>Vos angles morts</h2>
+        ${morts}
+        ${noteEC}
+
+        <h2>Enjeu par enjeu</h2>
+        ${parEnjeu}
+      `;
     }
 
-
-    /* ==========================================================
-       PARSEUR MARKDOWN MINIMAL
-       ========================================================== */
-    function renderMarkdown(md) {
-      const lines = md.split('\n');
-      let html = '';
-      let inList = false;
-      let paraBuf = [];
-
-      function flushPara() {
-        if (paraBuf.length) {
-          html += '<p>' + inlineFormat(paraBuf.join(' ')) + '</p>';
-          paraBuf = [];
-        }
-      }
-      function closeList() { if (inList) { html += '</ul>'; inList = false; } }
-
-      function inlineFormat(s) {
-        s = escapeHtml(s);
-        s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
-        return s;
-      }
-
-      for (let raw of lines) {
-        const line = raw.trim();
-        if (!line) {
-          flushPara();
-          closeList();
-          continue;
-        }
-        if (line.startsWith('### ')) {
-          flushPara(); closeList();
-          html += '<h3>' + inlineFormat(line.slice(4)) + '</h3>';
-        } else if (line.startsWith('## ')) {
-          flushPara(); closeList();
-          html += '<h2>' + inlineFormat(line.slice(3)) + '</h2>';
-        } else if (line.startsWith('# ')) {
-          flushPara(); closeList();
-          html += '<h2>' + inlineFormat(line.slice(2)) + '</h2>';
-        } else if (line.startsWith('- ') || line.startsWith('* ')) {
-          flushPara();
-          if (!inList) { html += '<ul>'; inList = true; }
-          html += '<li>' + inlineFormat(line.slice(2)) + '</li>';
-        } else {
-          closeList();
-          paraBuf.push(line);
-        }
-      }
-      flushPara(); closeList();
-      return html;
-    }
 
     /* ==========================================================
        RENDU DES ÉCRANS
@@ -1655,12 +1413,10 @@ FORMAT DE SORTIE
 
     function render() {
       const n = state.ecranActuel;
+      const total = state.quizOrder.length;
       if (n === 0) renderEcranConsentement();
-      else if (n === 1) renderEcranMiseEnRoute();
-      else if (n >= 2 && n <= 8) renderEcranEnjeu(n - 2);
-      else if (n === 9) renderEcranBoussole();
-      else if (n === 10) renderEcranGeneration();
-      else if (n === 11) renderEcranRapport();
+      else if (n >= 1 && n <= total) renderEcranQuestion(n - 1);
+      else if (n === total + 1) renderEcranRapport();
     }
 
     /* ----- Écran 0 : Consentement ----- */
@@ -1683,44 +1439,10 @@ FORMAT DE SORTIE
       <div class="consent-box">
         <p style="margin-top:0;">Ce questionnaire traite vos réponses de la façon suivante :</p>
         <ul>
-          <li>Vos réponses restent dans votre navigateur. Elles ne sont <strong>jamais stockées</strong> sur un serveur.</li>
-          <li>Votre rapport individuel est généré via une API d'IA (serveurs tiers). Vos réponses sont transmises sans aucun élément d'identification.</li>
-          <li>Aucune donnée personnelle (nom, email, établissement) n'est collectée ou transmise.</li>
+          <li>Tout se passe <strong>dans votre navigateur</strong>. Vos réponses ne sont jamais envoyées ni stockées sur un serveur.</li>
+          <li>Votre profil, vos scores et vos feedbacks sont <strong>calculés localement et instantanément</strong>, sans aucune connexion à un service tiers.</li>
+          <li>Aucune donnée personnelle (nom, email, établissement) n'est collectée.</li>
         </ul>
-      </div>
-
-      <label class="checkbox-row" style="margin:20px 0 4px;">
-        <input type="checkbox" id="sans-ia-cb" ${state.sansIA ? 'checked' : ''}>
-        <span class="checkbox-custom"></span>
-        <span>Générer uniquement les scores (sans analyse par l'IA)</span>
-      </label>
-
-      <div id="api-block" style="display:${state.sansIA || state.netlifyMode ? 'none' : 'block'}">
-        ${!CONFIG.API_KEY ? `
-        <div class="api-key-block">
-          <label for="api-provider">Fournisseur d'IA</label>
-          <select id="api-provider" style="width:100%;border:2px solid var(--retro-teal);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:14px;background:var(--retro-paper);margin-bottom:10px;">
-            <option value="anthropic" ${state.apiProvider === 'anthropic' || !state.apiProvider ? 'selected' : ''}>Anthropic (Claude)</option>
-            <option value="openai" ${state.apiProvider === 'openai' ? 'selected' : ''}>OpenAI (GPT)</option>
-            <option value="compatible" ${state.apiProvider === 'compatible' ? 'selected' : ''}>Compatible OpenAI (Mistral, Groq, Ollama…)</option>
-          </select>
-
-          <div id="custom-url-row" style="display:${state.apiProvider === 'compatible' ? 'block' : 'none'};margin-bottom:10px;">
-            <label for="api-custom-url">URL de base de l'API</label>
-            <input type="text" id="api-custom-url" placeholder="https://api.mistral.ai/v1" value="${escapeHtml(state.apiCustomUrl)}" autocomplete="off"
-              style="width:100%;border:2px solid var(--retro-teal);border-radius:8px;padding:8px 10px;font-family:monospace;font-size:13px;background:var(--retro-paper);">
-          </div>
-
-          <label for="api-model">Modèle <span style="font-weight:normal;text-transform:none;letter-spacing:0;">(laisser vide pour le modèle par défaut)</span></label>
-          <input type="text" id="api-model" placeholder="" value="${escapeHtml(state.apiModel)}" autocomplete="off"
-            style="width:100%;border:2px solid var(--retro-teal);border-radius:8px;padding:8px 10px;font-family:monospace;font-size:13px;background:var(--retro-paper);margin-bottom:10px;">
-
-          <label for="api-key">Clé API</label>
-          <input type="password" id="api-key" placeholder="sk-ant-..." value="${escapeHtml(state.apiKey)}" autocomplete="off">
-          <p style="margin:8px 0 0; font-size:12px; color:rgba(13,22,23,0.65);">
-            La clé reste uniquement en mémoire de votre navigateur.
-          </p>
-        </div>` : ''}
       </div>
 
       <label class="checkbox-row">
@@ -1738,249 +1460,66 @@ FORMAT DE SORTIE
     </div>
   `;
       const cb = document.getElementById('consent-cb');
-      const sansIaCb = document.getElementById('sans-ia-cb');
-      const apiBlock = document.getElementById('api-block');
       const btn = document.getElementById('btn-start');
-      const apiInput = document.getElementById('api-key');
-      const providerSel = document.getElementById('api-provider');
-      const modelInput = document.getElementById('api-model');
-      const customUrlInput = document.getElementById('api-custom-url');
-      const customUrlRow = document.getElementById('custom-url-row');
 
       cb.addEventListener('change', () => {
         state.consentement = cb.checked;
         btn.disabled = !state.consentement;
       });
-      if (sansIaCb) {
-        sansIaCb.addEventListener('change', () => {
-          state.sansIA = sansIaCb.checked;
-          if (apiBlock) apiBlock.style.display = state.sansIA ? 'none' : 'block';
-        });
-      }
-      if (apiInput) {
-        apiInput.addEventListener('input', () => {
-          state.apiKey = apiInput.value.trim();
-          if (providerSel && !state.apiProvider) {
-            const detected = detecterProvider(state.apiKey);
-            providerSel.value = detected;
-            state.apiProvider = detected;
-            if (customUrlRow) customUrlRow.style.display = detected === 'compatible' ? 'block' : 'none';
-            const ph = PROVIDERS[detected]?.placeholder || 'Votre clé API';
-            apiInput.placeholder = ph;
-          }
-        });
-      }
-      if (providerSel) {
-        providerSel.addEventListener('change', () => {
-          state.apiProvider = providerSel.value;
-          if (customUrlRow) customUrlRow.style.display = state.apiProvider === 'compatible' ? 'block' : 'none';
-          const pconf = PROVIDERS[state.apiProvider];
-          if (apiInput) apiInput.placeholder = pconf?.placeholder || 'Votre clé API';
-          if (modelInput) modelInput.placeholder = pconf?.defaultModel || '';
-        });
-      }
-      if (modelInput) modelInput.addEventListener('input', () => { state.apiModel = modelInput.value.trim(); });
-      if (customUrlInput) customUrlInput.addEventListener('input', () => { state.apiCustomUrl = customUrlInput.value.trim(); });
       btn.addEventListener('click', () => {
         if (!state.consentement) return;
         setEcran(1);
       });
     }
 
-    /* ----- Écran 1 : Mise en route (M1, M2) ----- */
-    function renderEcranMiseEnRoute() {
+    /* ----- Écrans 1..N : une question à la fois (ordre mélangé, auto-avance) ----- */
+    function renderEcranQuestion(idx) {
+      const total = state.quizOrder.length;
+      const qid = state.quizOrder[idx];
+      const q = QUESTIONS[qid];
+      const cur = state.reponses[qid];
       app.innerHTML = `
     <div class="ecran">
-      ${progress(1, 8)}
-      <div class="section-header">
-        <span class="section-emoji">🧭</span>
-        <div>
-          <h2 class="section-titre">Mise en route</h2>
-          <p class="section-sous-titre">2 questions pour vous situer avant d'entrer dans les enjeux</p>
-        </div>
-      </div>
+      ${progress(idx + 1, total)}
       ${separateur('❧')}
-      <div id="questions-container">
-        ${renderQuestionCard('M1', 1)}
-        ${renderQuestionCard('M2', 2)}
-      </div>
-      ${separateur('✿')}
-      <div class="button-row">
-        <button class="btn-primary" id="btn-next" disabled>
-          <span class="btn-label">Suivant</span>
-          <span class="btn-icon">→</span>
-        </button>
-      </div>
-    </div>
-  `;
-      attachQuestionHandlers(['M1', 'M2']);
-      const btn = document.getElementById('btn-next');
-      function check() { btn.disabled = !(state.reponses.M1 && state.reponses.M2); }
-      check();
-      document.getElementById('questions-container').addEventListener('change', check);
-      document.getElementById('questions-container').addEventListener('click', () => setTimeout(check, 0));
-      btn.addEventListener('click', () => {
-        state.profil_entree = mappingM1[state.reponses.M1];
-        state.contexte_ecole = mappingM2[state.reponses.M2];
-        setEcran(2);
-      });
-    }
-
-    /* ----- Écrans 2-8 : Un enjeu = un écran ----- */
-    function renderEcranEnjeu(idx) {
-      const enjeu = ENJEUX[idx];
-      const qids = QUESTIONS_PAR_ENJEU[enjeu.id];
-      const ornements = ['❧', '✿', '❀', '⚘', '✾', '❁', '❃'];
-
-      app.innerHTML = `
-    <div class="ecran">
-      ${progress(idx + 2, 8)}
-      <div class="section-header">
-        <span class="section-emoji">${enjeu.emoji}</span>
-        <div>
-          <h2 class="section-titre">Enjeu ${idx + 1} — ${enjeu.titre}</h2>
-          <p class="section-sous-titre">${escapeHtml(enjeu.sousTitre)}</p>
+      <div class="carte-question">
+        <p class="q-text"><span class="q-num">${idx + 1}</span>${escapeHtml(q.text)}</p>
+        ${q.help ? `<div class="q-help">${escapeHtml(q.help)}</div>` : ''}
+        <div class="options" data-qid="${qid}">
+          ${q.options.map((opt, i) => {
+        const letter = letterFromIndex(i);
+        const sel = cur === letter ? 'selected' : '';
+        return `
+            <label class="option ${sel}" data-letter="${letter}">
+              <span class="option-lettre">${letter}</span>
+              <span class="option-text">${escapeHtml(opt)}</span>
+            </label>`;
+      }).join('')}
         </div>
       </div>
-      ${separateur(ornements[idx % ornements.length])}
-      <div id="questions-container">
-        ${qids.map((qid, i) => renderQuestionCard(qid, i + 1)).join('')}
-      </div>
-      ${separateur(ornements[(idx + 1) % ornements.length])}
-      <div class="button-row">
-        <button class="btn-primary" id="btn-next" disabled>
-          <span class="btn-label">${idx === 6 ? 'Vers la boussole' : 'Suivant'}</span>
-          <span class="btn-icon">→</span>
-        </button>
+      <div class="button-row" style="justify-content:flex-start;">
+        ${idx > 0 ? `<button class="btn-secondary" id="btn-prev">← Précédent</button>` : ''}
       </div>
     </div>
   `;
-      attachQuestionHandlers(qids);
-      const btn = document.getElementById('btn-next');
-      // Required = scored questions
-      const required = SCORED_QUESTIONS_PAR_ENJEU[enjeu.id];
-      function check() {
-        btn.disabled = !required.every(qid => state.reponses[qid] !== undefined && state.reponses[qid] !== null);
-      }
-      check();
-      document.getElementById('questions-container').addEventListener('click', () => setTimeout(check, 0));
-      document.getElementById('questions-container').addEventListener('input', check);
-      btn.addEventListener('click', () => setEcran(state.ecranActuel + 1));
-    }
-
-    /* ----- Écran 9 : Boussole ----- */
-    function renderEcranBoussole() {
-      app.innerHTML = `
-    <div class="ecran">
-      ${progress(8, 8)}
-      <div class="section-header">
-        <span class="section-emoji">📊</span>
-        <div>
-          <h2 class="section-titre">Ma boussole personnelle</h2>
-          <p class="section-sous-titre">Une dernière étape pour personnaliser votre rapport</p>
-        </div>
-      </div>
-      ${separateur('❀')}
-      <p class="intro-text" style="font-style:italic; margin-bottom:8px;">
-        Ces réponses enrichissent votre rapport — prenez le temps d'y réfléchir. Toutes sont optionnelles.
-      </p>
-      <div id="boussole-container">
-        ${boussoleQuestion('B1_dominants', "Les 2 ou 3 enjeux sur lesquels je me sens le plus informé·e ou le plus mobilisé·e :")}
-        ${boussoleQuestion('B2_angles_morts', "Les 2 ou 3 enjeux que j'ai trouvés les plus inconnus, les plus difficiles, ou que j'évite — mes angles morts :")}
-        ${boussoleQuestion('B3_attente', "Ce que je viens chercher dans cette formation — en une phrase concrète :")}
-      </div>
-      ${separateur('⚘')}
-      <div class="button-row">
-        <button class="btn-primary" id="btn-generate">
-          <span class="btn-label">Générer mon rapport</span>
-          <span class="btn-icon">✨</span>
-        </button>
-      </div>
-    </div>
-  `;
-      ['B1_dominants', 'B2_angles_morts', 'B3_attente', 'B4_question'].forEach(k => {
-        const ta = document.getElementById('ta-' + k);
-        ta.addEventListener('input', () => { state.boussole[k] = ta.value; });
+      const opts = app.querySelectorAll(`.options[data-qid="${qid}"] .option`);
+      opts.forEach(el => {
+        el.addEventListener('click', () => {
+          opts.forEach(o => o.classList.remove('selected'));
+          el.classList.add('selected');
+          state.reponses[qid] = el.dataset.letter;
+          setTimeout(() => setEcran(state.ecranActuel + 1), 300);
+        });
       });
-      document.getElementById('btn-generate').addEventListener('click', () => {
-        if (!state.apiKey && !state.sansIA && !state.netlifyMode) {
-          alert("Aucune clé API n'est configurée. Renseignez-en une à l'écran d'accueil ou demandez au formateur de pré-configurer le fichier.");
-          return;
-        }
-        setEcran(10);
-      });
+      const prev = document.getElementById('btn-prev');
+      if (prev) prev.addEventListener('click', () => setEcran(state.ecranActuel - 1));
     }
 
-    function boussoleQuestion(key, label) {
-      return `
-    <div class="carte-question">
-      <p class="q-text">${escapeHtml(label)}</p>
-      <textarea id="ta-${key}" placeholder="Votre réponse (optionnelle)…">${escapeHtml(state.boussole[key] || '')}</textarea>
-    </div>
-  `;
-    }
-
-    /* ----- Écran 10 : Génération ----- */
-    function renderEcranGeneration() {
-      app.innerHTML = `
-    <div class="ecran">
-      <div class="loader-container">
-        <div class="loader-orbe"></div>
-        <div class="loader-texte" id="loader-text">Analyse en cours…</div>
-      </div>
-    </div>
-  `;
-      const messages = [
-        "Cartographie de vos profils dominants…",
-        "Identification de vos angles morts…",
-        "Rédaction de votre rapport personnalisé…",
-        "Mise en forme finale…"
-      ];
-      let i = 0;
-      const interval = setInterval(() => {
-        const el = document.getElementById('loader-text');
-        if (el) el.textContent = messages[i % messages.length];
-        i++;
-      }, 2200);
-
-      // Calculer scores et profils
+    /* ----- Écran final : Rapport ----- */
+    function renderEcranRapport() {
+      // Les scores et profils sont calculés ici, juste avant l'affichage.
       calculerScoresEnjeux();
 
-      if (state.sansIA) {
-        clearInterval(interval);
-        state.rapport = '';
-        state.rapportError = null;
-        setEcran(11);
-        return;
-      }
-
-      if (!state.apiKey && !state.netlifyMode) {
-        clearInterval(interval);
-        state.rapportError = "Aucune clé API configurée. Revenez à l'accueil et renseignez une clé, ou cochez « Sans analyse IA ».";
-        setEcran(11);
-        return;
-      }
-
-      const pAPI = genererRapportIndividuel();
-
-      Promise.allSettled([pAPI]).then(([rApi]) => {
-        clearInterval(interval);
-        if (rApi.status === 'fulfilled') {
-          state.rapport = rApi.value;
-          state.rapportError = null;
-        } else {
-          const errMsg = rApi.reason?.message || String(rApi.reason);
-          const isCors = errMsg.toLowerCase().includes('failed to fetch') || errMsg.toLowerCase().includes('network');
-          console.error('[API Error]', rApi.reason);
-          state.rapportError = "Une erreur est survenue lors de la génération du rapport individuel.\n\nDétail : " + errMsg
-            + (isCors ? "\n\n⚠️ Causes possibles :\n• Brave Shields pas encore désactivés → icône 🦁 dans la barre d'adresse\n• Clé API invalide ou expirée\n• Connexion réseau instable\n\nOuvrez la console (F12) pour plus de détails." : "");
-        }
-        setEcran(11);
-      });
-    }
-
-    /* ----- Écran 11 : Rapport ----- */
-    function renderEcranRapport() {
       const radarSvg = buildRadarSVG();
       const scoresList = Object.entries(state.scores_normalises).map(([id, val]) => `
     <div class="score-row">
@@ -1994,12 +1533,6 @@ FORMAT DE SORTIE
 
       const dom = state.profils_dominants.map(id => NOM_ENJEUX_AFFICHE[id]).join(' · ');
       const ang = state.angles_morts.map(id => NOM_ENJEUX_AFFICHE[id]).join(' · ');
-
-      const rapportHtml = state.rapportError
-        ? `<div class="error-box">${escapeHtml(state.rapportError).replace(/\n/g, '<br>')}<br><br>
-         <button class="btn-secondary no-print" id="btn-retry">Réessayer</button>
-       </div>`
-        : renderMarkdown(state.rapport);
 
       app.innerHTML = `
     <div class="ecran">
@@ -2028,14 +1561,12 @@ FORMAT DE SORTIE
             </div>
           </div>
         </div>
-        ${state.sansIA ? '' : `
         <div class="col-droite">
           <h2 style="font-size:16px;">Lecture personnalisée</h2>
           <div class="rapport-container" id="rapport-content">
-            ${rapportHtml}
+            ${buildFeedbackHTML()}
           </div>
-        </div>`}
-
+        </div>
       </div>
 
       <div class="button-row no-print">
@@ -2048,86 +1579,6 @@ FORMAT DE SORTIE
       if (btnPrint) btnPrint.addEventListener('click', () => window.print());
       const btnRestart = document.getElementById('btn-restart');
       if (btnRestart) btnRestart.addEventListener('click', () => location.reload());
-      const btnRetry = document.getElementById('btn-retry');
-      if (btnRetry) btnRetry.addEventListener('click', () => setEcran(10));
-    }
-
-    /* ==========================================================
-       QUESTIONS — RENDU
-       ========================================================== */
-    function renderQuestionCard(qid, num) {
-      const q = QUESTIONS[qid];
-      if (!q) return '';
-      let inner = '';
-      if (q.type === 'choix') {
-        inner = `<div class="options" data-qid="${qid}">${q.options.map((opt, i) => {
-          const letter = letterFromIndex(i);
-          const sel = state.reponses[qid] === letter ? 'selected' : '';
-          return `
-          <label class="option ${sel}" data-letter="${letter}">
-            <span class="option-lettre">${letter}</span>
-            <span class="option-text">${escapeHtml(opt)}</span>
-          </label>
-        `;
-        }).join('')
-          }</div>`;
-      } else if (q.type === 'likert') {
-        const cur = state.reponses[qid];
-        inner = `
-      <div class="likert-container" data-qid="${qid}">
-        ${[1, 2, 3, 4, 5].map(v => `
-          <div class="likert-option ${cur === v ? 'selected' : ''}" data-value="${v}">${v}</div>
-        `).join('')}
-      </div>
-      <div class="likert-labels">
-        <span>${escapeHtml(q.labels[0])}</span>
-        <span>${escapeHtml(q.labels[1])}</span>
-      </div>
-    `;
-      } else if (q.type === 'ouverte') {
-        inner = `<textarea data-qid="${qid}" placeholder="${escapeHtml(q.placeholder || '')}">${escapeHtml(state.reponses_ouvertes[qid] || '')}</textarea>`;
-      }
-      const help = q.help ? `<div class="q-help">${escapeHtml(q.help)}</div>` : '';
-      return `
-    <div class="carte-question">
-      <p class="q-text"><span class="q-num">${qid}</span>${escapeHtml(q.text)}</p>
-      ${help}
-      ${inner}
-    </div>
-  `;
-    }
-
-    function attachQuestionHandlers(qids) {
-      const container = document.getElementById('questions-container');
-      qids.forEach(qid => {
-        const q = QUESTIONS[qid];
-        if (q.type === 'choix') {
-          const opts = container.querySelectorAll(`.options[data-qid="${qid}"] .option`);
-          opts.forEach(el => {
-            el.addEventListener('click', () => {
-              opts.forEach(o => o.classList.remove('selected'));
-              el.classList.add('selected');
-              state.reponses[qid] = el.dataset.letter;
-            });
-          });
-        } else if (q.type === 'likert') {
-          const opts = container.querySelectorAll(`.likert-container[data-qid="${qid}"] .likert-option`);
-          opts.forEach(el => {
-            el.addEventListener('click', () => {
-              opts.forEach(o => o.classList.remove('selected'));
-              el.classList.add('selected');
-              state.reponses[qid] = parseInt(el.dataset.value, 10);
-            });
-          });
-        } else if (q.type === 'ouverte') {
-          const ta = container.querySelector(`textarea[data-qid="${qid}"]`);
-          if (ta) {
-            ta.addEventListener('input', () => {
-              state.reponses_ouvertes[qid] = ta.value;
-            });
-          }
-        }
-      });
     }
 
     /* ==========================================================
@@ -2192,10 +1643,20 @@ FORMAT DE SORTIE
     /* ==========================================================
        INIT
        ========================================================== */
-    // Détection Netlify par hostname — pas de probe pour éviter les re-rendus
-    if (window.location.hostname.endsWith('.netlify.app') || window.location.hostname.endsWith('.netlify.com')) {
-      state.netlifyMode = true;
-    }
+    // Ordre mélangé des questions à choix (hors M1/M2, hors likert/ouvert) — tiré au hasard à chaque session
+    (function buildQuizOrder() {
+      const ids = [];
+      for (const enjeuId in QUESTIONS_PAR_ENJEU) {
+        for (const qid of QUESTIONS_PAR_ENJEU[enjeuId]) {
+          if (QUESTIONS[qid].type === 'choix') ids.push(qid);
+        }
+      }
+      for (let i = ids.length - 1; i > 0; i--) {        // Fisher-Yates
+        const j = Math.floor(Math.random() * (i + 1));
+        [ids[i], ids[j]] = [ids[j], ids[i]];
+      }
+      state.quizOrder = ids;
+    })();
 
     render();
   </script>
