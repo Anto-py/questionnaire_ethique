@@ -644,6 +644,35 @@
       fill: var(--retro-teal);
     }
 
+    /* Sélecteur de langue */
+    .lang-switch {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .lang-switch button {
+      border: 2px solid var(--retro-teal);
+      background: transparent;
+      color: var(--retro-teal);
+      padding: 3px 12px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-family: Impact, sans-serif;
+      letter-spacing: 0.1em;
+      font-size: 12px;
+    }
+
+    .lang-switch button:hover {
+      border-color: var(--retro-jaune);
+    }
+
+    .lang-switch button[aria-pressed="true"] {
+      background: var(--retro-teal);
+      color: var(--retro-paper);
+    }
+
     /* Print */
     @media print {
       body {
@@ -735,6 +764,10 @@
 <body>
 
   <div class="page-frame">
+    <div class="lang-switch no-print" role="group" aria-label="Langue / Language">
+      <button type="button" data-lang="fr">FR</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
     <div id="app"></div>
   </div>
 
@@ -804,12 +837,12 @@
         ], score: { A: 1, B: 2, C: 3, D: 4 }
       },
       E2: {
-        type: 'choix', text: "L'IA peut adapter le contenu pédagogique à chaque élève (rythme, niveau, style d'apprentissage)sans que l'enseignant ne doive s'occuper de rien. Cette personnalisation vous inspire surtout...",
+        type: 'choix', text: "L'IA peut adapter le contenu pédagogique à chaque élève (rythme, niveau, style d'apprentissage) sans que l'enseignant ne doive s'occuper de rien. Cette personnalisation vous inspire surtout...",
         options: [
           "De l'enthousiasme — c'est une promesse de différenciation enfin accessible",
           "De la prudence — elle risque de renforcer les inégalités selon l'accès aux outils",
           "De la méfiance — je ne sais pas sur quelles données ni selon quels critères elle opère",
-          "Du scepticisme — la relation pédagogique ne se réduit pas à de la personnalisation algorithmique, surtout si l'enseignantt(e) ne maitrise pas les outils d'IA"
+          "Du scepticisme — la relation pédagogique ne se réduit pas à de la personnalisation algorithmique, surtout si l'enseignant·e ne maîtrise pas les outils d'IA"
         ], score: { A: 1, B: 3, C: 3, D: 3 }
       },
       E3: {
@@ -1130,7 +1163,7 @@
         options: [
           "Non — aucune",
           "J'en ai entendu parler sans connaître de projet concret",
-          "Oui — je connais quelques initiatives (Albert en france, Mistral, etc.)",
+          "Oui — je connais quelques initiatives (Albert en France, Mistral, etc.)",
           "Oui — je soutiens ou participe à de telles initiatives"
         ], score: { A: 1, B: 2, C: 3, D: 4 }
       },
@@ -1165,6 +1198,7 @@
        STATE
        ========================================================== */
     const state = {
+      lang: langueInitiale(),
       ecranActuel: 0,
       consentement: false,
       reponses: {},
@@ -1368,6 +1402,527 @@
       }
     };
 
+    /* ==========================================================
+       LANGUES (FR / EN)
+       Le français reste la source : les objets ci-dessus sont inchangés.
+       L'anglais double uniquement les textes affichés ; une entrée
+       absente retombe sur le français. Le scoring ne lit jamais le texte.
+       ========================================================== */
+    const UI = {
+      fr: {
+        pageTitle: "Quel utilisateur d'IA es-tu ? — Autopositionnement",
+        etape: 'Étape',
+        surtitreAccueil: 'Formation FWB — Enseignement secondaire',
+        titreAccueil: "Quel utilisateur·rice d'IA es-tu?",
+        accroche: "Analysez votre rapport à l'IA",
+        intro: `Ce questionnaire n'est pas un test. Il sert à <strong>révéler votre profil d'utilisateur·rice de l'IA</strong> —
+        ce que vous maîtrisez déjà, ce que vous mettez de côté, et ce que vous venez chercher ici.
+        <br><em>Répondez vite. Votre première réaction compte plus que votre réponse réfléchie.</em>`,
+        titreDonnees: "Information sur l'usage de vos données",
+        introDonnees: 'Ce questionnaire traite vos réponses de la façon suivante :',
+        donnees: [
+          'Tout se passe <strong>dans votre navigateur</strong>. Vos réponses ne sont jamais envoyées ni stockées sur un serveur.',
+          'Votre profil, vos scores et vos feedbacks sont <strong>calculés localement et instantanément</strong>, sans aucune connexion à un service tiers.',
+          "Aucune donnée personnelle (nom, email, établissement) n'est collectée."
+        ],
+        consentement: "J'ai lu et j'accepte les conditions d'utilisation de mes données.",
+        commencer: 'Je commence le questionnaire',
+        precedent: '← Précédent',
+        surtitreRapport: 'Votre rapport personnel',
+        titreRapport: "Votre profil d'utilisateur·rice de l'IA",
+        cartographie: 'Cartographie',
+        vosScores: 'Vos scores',
+        profilsDominants: 'Profils dominants',
+        anglesMorts: 'Angles morts',
+        lecture: 'Lecture personnalisée',
+        imprimer: 'Imprimer / PDF',
+        recommencer: 'Recommencer',
+        radarAria: 'Radar des enjeux',
+        hProfil: "Votre profil en un coup d'œil",
+        hAppuis: "Vos points d'appui",
+        hMorts: 'Vos angles morts',
+        hParEnjeu: 'Enjeu par enjeu',
+        profilGlobal: (d0, d1, a0, a1) => `Vos réponses dessinent une carte personnelle. Vos terrains les plus investis : <strong>${d0}</strong> et <strong>${d1}</strong> — des points d'appui sur lesquels la formation pourra prendre élan. Vos enjeux les moins explorés : <strong>${a0}</strong> et <strong>${a1}</strong> — non pas des lacunes, mais des opportunités que les deux journées viendront ouvrir. Aucun profil n'est complet, et c'est justement ce qui rend la formation utile.`,
+        noteEC: "L'esprit critique figure parmi vos angles morts : c'est le fil conducteur de toute la formation, donnez-y une attention prioritaire."
+      },
+      en: {
+        pageTitle: 'What kind of AI user are you? · Self-assessment',
+        etape: 'Step',
+        surtitreAccueil: 'Teacher training (FWB) · Secondary education',
+        titreAccueil: 'What kind of AI user are you?',
+        accroche: 'Analyse your relationship with AI',
+        intro: `This questionnaire is not a test. It aims to <strong>reveal your profile as an AI user</strong>:
+        what you already master, what you set aside, and what you have come here looking for.
+        <br><em>Answer quickly. Your first reaction matters more than a considered answer.</em>`,
+        titreDonnees: 'How your data is used',
+        introDonnees: 'This questionnaire handles your answers as follows:',
+        donnees: [
+          'Everything happens <strong>in your browser</strong>. Your answers are never sent to or stored on a server.',
+          'Your profile, scores and feedback are <strong>calculated locally and instantly</strong>, with no connection to any third-party service.',
+          'No personal data (name, email, school) is collected.'
+        ],
+        consentement: 'I have read and accept the terms for the use of my data.',
+        commencer: 'Start the questionnaire',
+        precedent: '← Previous',
+        surtitreRapport: 'Your personal report',
+        titreRapport: 'Your AI user profile',
+        cartographie: 'Map',
+        vosScores: 'Your scores',
+        profilsDominants: 'Dominant profiles',
+        anglesMorts: 'Blind spots',
+        lecture: 'Personalised reading',
+        imprimer: 'Print / PDF',
+        recommencer: 'Start again',
+        radarAria: 'Radar of the issues',
+        hProfil: 'Your profile at a glance',
+        hAppuis: 'Your strengths',
+        hMorts: 'Your blind spots',
+        hParEnjeu: 'Issue by issue',
+        profilGlobal: (d0, d1, a0, a1) => `Your answers draw a personal map. Your most invested areas are <strong>${d0}</strong> and <strong>${d1}</strong>, strengths the training can build on. Your least explored issues are <strong>${a0}</strong> and <strong>${a1}</strong>: not gaps, but opportunities that the two days will open up. No profile is complete, and that is exactly what makes the training useful.`,
+        noteEC: 'Critical thinking is among your blind spots. It is the common thread of the whole training, so give it priority attention.'
+      }
+    };
+
+    const NOM_ENJEUX_EN = {
+      ethique: 'Ethics',
+      juridique: 'Legal',
+      ecologique: 'Environmental',
+      esprit_critique: 'Critical thinking',
+      cybersecurite: 'Cybersecurity',
+      democratique: 'Democratic',
+      geopolitique: 'Geopolitical'
+    };
+
+    // Options dans l'ordre d'origine (A, B, C, D) : la clé de score reste celle du français.
+    const QUESTIONS_EN = {
+      E1: {
+        text: "A colleague uses an AI to generate personalised report card comments for their 120 students. They don't mention it to the students or to the parents. Your reaction?",
+        options: [
+          "It's pragmatic: nobody needs to know how the tools are used",
+          "It's debatable: the use is legitimate, but transparency would seem preferable to me",
+          "It's problematic: transparency towards families is a professional ethical duty",
+          "It's unacceptable: student data should never feed a consumer AI"
+        ]
+      },
+      E2: {
+        text: "AI can adapt teaching content to each student (pace, level, learning style) without the teacher having to do anything. This personalisation mainly inspires in you...",
+        options: [
+          "Enthusiasm: it promises differentiation that is finally within reach",
+          "Caution: it may reinforce inequalities depending on access to the tools",
+          "Distrust: I don't know what data or criteria it works with",
+          "Scepticism: the teaching relationship can't be reduced to algorithmic personalisation, especially if the teacher hasn't mastered AI tools"
+        ]
+      },
+      E3: {
+        text: "In your practice, how often do you explicitly tell your students that you used an AI to prepare a lesson, an exercise or an assessment?",
+        options: [
+          "Never: I don't use AI to prepare my lessons",
+          "Never: I use it but I don't talk about it",
+          "Sometimes: when it seems worth making it a topic of discussion",
+          "Always: it's a principle I have set for myself"
+        ]
+      },
+      E4: {
+        text: "Among these ethical issues related to AI in education, which one concerns you the most?", help: "(one answer only)",
+        options: [
+          "Delegating teaching decisions to a machine (which grades, guides, recommends)",
+          "Discriminatory biases in the models (gender, origin, language)",
+          "Students' dependence on AI at the expense of their own cognitive skills",
+          "The digital divide between students who have access to AI and those who don't"
+        ]
+      },
+      E6: {
+        text: "If an AI used in class produces biased or unfair content for a student, who do you think is mainly responsible?",
+        options: [
+          "The company that developed the tool",
+          "The teacher who chose to use it without checking",
+          "The institution that approved its rollout without a framework",
+          "Responsibility is necessarily shared, and that is precisely the ethical problem"
+        ]
+      },
+      J1: {
+        text: "When you use a consumer AI tool (ChatGPT, Gemini, Copilot…) in your professional practice, do you put data about your students (names, marks, answers...) into your prompts?",
+        options: [
+          "Yes, regularly: it helps give context to my requests",
+          "Yes, sometimes, without really thinking about it",
+          "Rarely: I try to avoid it, but without a precise rule",
+          "Never: I know it's a problem under the GDPR"
+        ]
+      },
+      J2: {
+        text: "The European AI Act began to apply in 2025. It classifies AI systems according to their level of risk. Could you place a tool you use within this classification?",
+        options: [
+          "No: this is the first time I've heard of the AI Act",
+          "I know it exists, but not what it contains",
+          "I know the broad outlines, but not well enough to apply the classification",
+          "Yes: I can assess a tool's level of risk within this framework"
+        ]
+      },
+      J3: {
+        text: "A student hands in an assignment obviously written by an AI, without saying so. Does your school have a clear framework for dealing with this situation?",
+        options: [
+          "Yes, and I know it well",
+          "Something exists, but it's vague or rarely applied",
+          "No, each teacher handles it in their own way",
+          "I don't know"
+        ]
+      },
+      J4: {
+        text: "You use an AI-generated image to illustrate course material that you hand out to your students. From a copyright point of view, this practice seems to you:",
+        options: [
+          "Perfectly legal: an AI image isn't protected",
+          "Probably legal, but I'm not sure",
+          "Legally unclear: the question hasn't been settled yet in Belgium",
+          "Potentially problematic: the models were trained on protected works"
+        ]
+      },
+      J6: {
+        text: "A student who is a minor asks you whether they can open a ChatGPT account for their homework. You answer:",
+        options: [
+          "Yes, without restriction: I don't see a problem",
+          "I advise them to do it with a parent",
+          "No: these platforms have age restrictions (13 or 16, depending on the case)",
+          "I don't know: I've never checked the terms of use"
+        ]
+      },
+      Eco1: {
+        text: "Did you know that a query sent to a large language model uses about 10 times more energy than a Google search?",
+        options: [
+          "No, I had no idea",
+          "I had a vague idea",
+          "Yes, I knew",
+          "Yes, and I take it into account in how I use it"
+        ]
+      },
+      Eco2: {
+        text: "The environmental impact of AI (energy, water, rare minerals) is an argument you would use in class to...",
+        options: [
+          "Discourage your students from using AI",
+          "Temper the enthusiasm around AI",
+          "Encourage frugal and mindful use",
+          "I wouldn't use it: it's not my role or my subject"
+        ]
+      },
+      Eco4: {
+        text: "Have you heard of platforms that let you compare the carbon footprint of different AI models (such as Compar:IA)?",
+        options: [
+          "No, I didn't know about them",
+          "Yes, I've heard of them",
+          "Yes, I've already used one",
+          "Yes, and I'm considering using, or have already used, this kind of tool in class"
+        ]
+      },
+      Eco5: {
+        text: "Choosing a frugal AI model rather than an energy-hungry one for a given task seems to you...",
+        options: [
+          "A marginal detail: the gains are negligible at my scale",
+          "An interesting gesture, but hard to put into practice for lack of information",
+          "A habit to develop, like sorting your waste",
+          "A criterion I include, or want to include, in how I use AI"
+        ]
+      },
+      Eco6: {
+        text: "Have you ever discussed the environmental impact of digital technology with your students?",
+        options: [
+          "Never",
+          "Once or twice, informally",
+          "Yes, as part of a lesson or a project",
+          "Regularly: it's a common thread in my teaching"
+        ]
+      },
+      EC1: {
+        text: "An AI produces a fluent, well-structured text for you, with precise references. Your reflex is to...",
+        options: [
+          "Use it as it is: formal quality is a sufficient indicator",
+          "Reread it carefully, but without systematically checking the sources",
+          "Check the key claims before using it",
+          "Treat it as a draft to rebuild: I don't trust any AI source"
+        ]
+      },
+      EC2: {
+        text: "AIs “hallucinate”: they sometimes produce false information with confidence. How often have you personally spotted this?",
+        options: [
+          "Never: I haven't come across it yet",
+          "Once or twice",
+          "Several times: it's a phenomenon I know well",
+          "Often: I systematically factor it into how I assess AI output"
+        ]
+      },
+      EC3: {
+        text: "The same question put to two different AIs can produce answers revealing distinct ideological nuances (cultural, political, linguistic). Are you aware of this phenomenon?",
+        options: [
+          "No: I thought AIs answered in a neutral and factual way",
+          "I had a hunch, but no concrete example",
+          "Yes: I have already observed differences between models",
+          "Yes, and I take it into account when choosing the tools I use or recommend"
+        ]
+      },
+      EC5: {
+        text: "A student shows you a flawless assignment produced with the help of an AI. You:",
+        options: [
+          "Accept it: mastering the tools is also a skill worth valuing",
+          "Ask them questions orally to check their real understanding",
+          "Refuse it and ask for a version without AI",
+          "Use it as a lever to discuss what “understanding” means in the age of AI"
+        ]
+      },
+      EC6: {
+        text: "Do you have specific teaching practices to train your students to identify content generated by an AI?",
+        options: [
+          "No, not yet",
+          "I'm thinking about it, but without a settled approach",
+          "Yes: a few intuitive practices",
+          "Yes: an explicit, well-equipped approach that I can describe"
+        ]
+      },
+      CS1: {
+        text: "Among the following threats amplified by AI, which one seems the most underestimated in schools?",
+        options: [
+          "Hyper-personalised phishing (emails that perfectly imitate a colleague or the school management)",
+          "Voice cloning (a call that seems to come from a parent or the head of school)",
+          "Deepfakes involving students or teachers",
+          "Automated exploitation of vulnerabilities in school platforms and digital workspaces"
+        ]
+      },
+      CS2: {
+        text: "When you use an AI tool professionally, do you check what data is collected and how it is used?",
+        options: [
+          "Never",
+          "Rarely: only if something alerts me",
+          "Sometimes: for the tools I use regularly",
+          "Always: before any new use"
+        ]
+      },
+      CS4: {
+        text: "You receive an email from your school management urgently asking you to send the class lists with contact details. The email is perfect, without a single mistake, with the usual signature. Your reaction?",
+        options: [
+          "I send them: the message is credible and urgent",
+          "I send them, but I set aside a slight doubt",
+          "I check through another channel (phone call, direct contact) before acting",
+          "I'm trained for this type of attack: I know exactly what to look for and what to do"
+        ]
+      },
+      CS5: {
+        text: "Could you explain to your students how to protect themselves against a voice cloning or deepfake attack?",
+        options: [
+          "No: I don't feel competent on this subject",
+          "Partly: a few general tips",
+          "Yes: I have the knowledge to address it in class",
+          "Yes, and I have already worked through this kind of scenario with students"
+        ]
+      },
+      CS6: {
+        text: "Did you know that the safeguards built into AIs (the filters that prevent them from producing certain content) can be bypassed with accessible techniques, such as prompt injection or jailbreaking?",
+        options: [
+          "No: I thought these systems were reliable",
+          "I had heard about it without really understanding how",
+          "Yes: I know the principle",
+          "Yes, and I understand the implications for the tools I use with my students"
+        ]
+      },
+      D1: {
+        text: "The concept of the “liar's dividend” refers to the fact that the spread of fake content also makes it easier to deny real content. Did you know this concept?",
+        options: [
+          "No: it's new to me",
+          "I had a sense of it without knowing the term",
+          "Yes: I know it",
+          "Yes, and I use it, or plan to use it, with my students"
+        ]
+      },
+      D3: {
+        text: "Have you observed filter bubble effects (repeated exposure to the same points of view, imperviousness to opposing arguments) among your students?",
+        options: [
+          "No, not in an obvious way",
+          "Maybe, but it's hard to attribute specifically to algorithms",
+          "Yes: it's visible and recurring",
+          "Yes, and I have developed practices to work on this phenomenon in class"
+        ]
+      },
+      D4: {
+        text: "Do you prepare your students to identify and analyse content generated by AI for the purpose of democratic manipulation?",
+        options: [
+          "No: it hasn't made it into my lessons yet",
+          "Rarely: when major news events come up",
+          "Sometimes: in units on media or citizenship",
+          "Regularly: it's a core focus of my teaching"
+        ]
+      },
+      D5: {
+        text: "Does the concentration of AI development in a few large private companies (mostly American) concern you from a democratic point of view?",
+        options: [
+          "No: market competition is a sufficient regulator",
+          "A little, but no differently from other industries",
+          "Yes: public oversight or sovereign European AIs would be needed",
+          "Yes, strongly: it's a question of cultural power and of the independence of our democratic societies"
+        ]
+      },
+      D6: {
+        text: "Do you think schools have a specific and urgent role in training students to be clear-sighted citizens in the face of AI?",
+        options: [
+          "No: that role belongs to families and civil society",
+          "Partly: schools can contribute, but it's not their main mission",
+          "Yes: it's a fundamental civic mission",
+          "Yes, and it's urgent: schools are lagging behind on this subject"
+        ]
+      },
+      G1: {
+        text: "Did you know that the major AI models used in French-speaking Belgium are mostly developed by American companies, hosted on servers outside the EU, and trained on data whose cultural and linguistic origin you don't control?",
+        options: [
+          "No: I hadn't realised it in those terms",
+          "I had a vague idea",
+          "Yes: I knew",
+          "Yes, and I understand the consequences for my professional use"
+        ]
+      },
+      G2: {
+        text: "The choice of AI tools used at school seems to you to be a decision that is...",
+        options: [
+          "Purely educational: what matters is effectiveness in class",
+          "Mostly practical: ease of access, free of charge, ease of use",
+          "Partly political: it's a decision for the school, but it isn't up to the teacher",
+          "Fully political: choosing a tool means choosing who you give power and information to"
+        ]
+      },
+      G4: {
+        text: "The data produced by users of AI tools (potentially including your students) feeds the training of models owned by foreign companies. This reality inspires in you...",
+        options: [
+          "Indifference: it's the price to pay for accessible services",
+          "Moderate concern, without knowing how to act differently",
+          "Vigilance: whenever possible, I choose alternatives that respect data",
+          "Strong concern: it should be an institutional selection criterion in the Wallonia-Brussels Federation"
+        ]
+      },
+      G5: {
+        text: "The European Union is developing a regulatory approach to AI that differs from those of the United States and China. This difference seems to you...",
+        options: [
+          "Unimportant: AI is a global and neutral technology",
+          "Interesting, but too restrictive for innovation",
+          "Necessary to protect the rights of European citizens",
+          "Insufficient: Europe risks losing its digital sovereignty if it doesn't also develop its own AI tools"
+        ]
+      },
+      G6: {
+        text: "Are you aware of Belgian or European initiatives aiming to develop public or sovereign AI tools for education?",
+        options: [
+          "No, none",
+          "I've heard of them without knowing of any concrete project",
+          "Yes: I know a few initiatives (Albert in France, Mistral, etc.)",
+          "Yes, and I support or take part in such initiatives"
+        ]
+      }
+    };
+
+    const FEEDBACK_EN = {
+      ethique: {
+        appui: "You already perceive the ethical dimension of your practices: transparency towards families, responsibility in the choice of tools. The training will turn these intuitions into guidelines you can share with your colleagues (UNDERSTAND phase).",
+        angleMort: "AI ethics touches everyday actions: telling your students about a use, deciding what can be fed into a consumer tool. The UNDERSTAND phase will equip you to make these choices without flying blind.",
+        bands: {
+          haut: "You already have reference points on responsibility and transparency. The training will structure them and test them against concrete classroom cases.",
+          moyen: "You sense the ethical issues without always having a framework to decide. The UNDERSTAND phase will give you decision criteria.",
+          bas: "AI ethics is still ground to explore, and that is precisely what the UNDERSTAND phase will open up, starting from real classroom situations."
+        }
+      },
+      juridique: {
+        appui: "The legal framework (GDPR, AI Act, copyright) is not foreign to you. The training will consolidate this knowledge and clear up the grey areas that remain (UNDERSTAND phase).",
+        angleMort: "GDPR, the AI Act and copyright already govern your practices, sometimes without your knowing it: student data in a prompt, a generated image handed out in class. The UNDERSTAND phase will clarify what is allowed.",
+        bands: {
+          haut: "You can place your practices within the legal framework. The training will refine the borderline cases (copyright, student data).",
+          moyen: "You know the rules exist without always being able to apply them. The UNDERSTAND phase will make the framework workable.",
+          bas: "The legal framework is still to be discovered. The training will make it a reference you can use every day, not an abstract text."
+        }
+      },
+      ecologique: {
+        appui: "You already include digital sobriety in the way you look at AI. The training will give you concrete levers to make it a classroom topic (PROTECT phase).",
+        angleMort: "The footprint of AI (energy, water, minerals) is barely present in your answers. The PROTECT phase will show how to make it a teaching argument, without guilt-tripping.",
+        bands: {
+          haut: "The environmental dimension already guides some of your choices. The training will offer you tools (footprint comparators) to pass it on.",
+          moyen: "You are aware of the environmental cost without always factoring it into your practices. The PROTECT phase will close the gap between knowing and doing.",
+          bas: "The environmental cost of AI is an angle to explore. The training will make it a concrete lever for the classroom."
+        }
+      },
+      esprit_critique: {
+        appui: "You don't take AI output at face value: you check, and you are aware of hallucinations and biases. The training will make these reflexes systematic with the PROMPT grid (VERIFY phase).",
+        angleMort: "Critical thinking is the common thread of the whole training. Hallucinations, biases, the ideologies of the models: the VERIFY phase makes it a priority, because it is the skill on which all the others depend.",
+        bands: {
+          haut: "You doubt AI output intelligently. The training will equip this reflex (PROMPT grid) so that you can teach it to your students.",
+          moyen: "You know AI can be wrong without always knowing where to look. The VERIFY phase will give you a method.",
+          bas: "Critical thinking about AI is the heart of the training. It is the common thread of both days, starting from concrete cases."
+        }
+      },
+      cybersecurite: {
+        appui: "You have cautious reflexes (checking what data is collected, wariness of suspicious messages). The training will complete them against the threats amplified by AI (PROTECT phase).",
+        angleMort: "Hyper-personalised phishing, voice cloning, deepfakes: AI renews the threats, and the old reference points are no longer enough. The PROTECT phase will give you updated reflexes.",
+        bands: {
+          haut: "You already have cybersecurity reflexes. The training will adapt them to the new attacks that AI makes possible.",
+          moyen: "You perceive the risks without always knowing how to guard against them. The PROTECT phase will update your reference points.",
+          bas: "Cybersecurity in the age of AI is ground to develop. The training will start from concrete scenarios (a fake email from the school management, voice cloning)."
+        }
+      },
+      democratique: {
+        appui: "You grasp the democratic stakes of AI (disinformation, filter bubbles) and the role of schools. The training will extend this clear-sightedness into classroom practices (DECIDE phase).",
+        angleMort: "Deepfakes, manipulation of opinion, the liar's dividend: AI weighs on citizenship. The DECIDE phase will explore the specific role of schools in this area.",
+        bands: {
+          haut: "You clearly perceive the democratic stakes. The training will help you turn them into units for your students.",
+          moyen: "You sense the civic stakes without having the tools for them yet. The DECIDE phase will give you ideas for the classroom.",
+          bas: "The role of AI in democratic life is an angle to invest in. The training will make it a concrete subject of teaching."
+        }
+      },
+      geopolitique: {
+        appui: "You see the political dimension of choosing tools (sovereignty, data, dependence). The training will enrich this lens (DECIDE phase).",
+        angleMort: "Who develops the AI you use, where does the data go, who are you giving power to? These questions are barely present in your answers. The DECIDE phase will open up this perspective.",
+        bands: {
+          haut: "You already read AI as a matter of power and sovereignty. The training will go further into the European alternatives.",
+          moyen: "You perceive the geopolitical stakes without having made them a selection criterion. The DECIDE phase will help you do so.",
+          bas: "The geopolitics of AI (sovereignty, dependence, data) is an angle to explore, which the training will make tangible."
+        }
+      }
+    };
+
+    // Langue de départ : ?lang=en dans l'adresse, sinon le français.
+    function langueInitiale() {
+      try {
+        const p = new URLSearchParams(location.search).get('lang');
+        if (p === 'fr' || p === 'en') return p;
+      } catch (e) { /* adresse illisible : français */ }
+      return 'fr';
+    }
+
+    function ui() { return UI[state.lang]; }
+    function nomEnjeu(id) { return (state.lang === 'en' ? NOM_ENJEUX_EN : NOM_ENJEUX_AFFICHE)[id]; }
+    function feedbackLangue() { return state.lang === 'en' ? FEEDBACK_EN : FEEDBACK; }
+    function texteQuestion(qid) {
+      const tr = state.lang === 'en' ? QUESTIONS_EN[qid] : null;
+      const q = QUESTIONS[qid];
+      return {
+        text: (tr && tr.text) || q.text,
+        help: tr ? (tr.help || q.help) : q.help,
+        options: (tr && tr.options && tr.options.length === q.options.length) ? tr.options : q.options
+      };
+    }
+
+    // Change la langue et redessine l'écran courant : les réponses restent en place.
+    function appliquerLangue(lang) {
+      state.lang = lang;
+      document.documentElement.lang = lang;
+      document.title = ui().pageTitle;
+      document.querySelectorAll('.lang-switch button').forEach(b => {
+        b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+      });
+    }
+
+    document.querySelectorAll('.lang-switch button').forEach(b => {
+      b.addEventListener('click', () => {
+        if (b.dataset.lang === state.lang) return;
+        appliquerLangue(b.dataset.lang);
+        try {
+          const u = new URL(location.href);
+          u.searchParams.set('lang', state.lang);
+          history.replaceState(null, '', u);
+        } catch (e) { /* fichier local : la langue vaut pour la session */ }
+        render();
+      });
+    });
+
     const ORDRE_ENJEUX = ['ethique', 'juridique', 'ecologique', 'esprit_critique', 'cybersecurite', 'democratique', 'geopolitique'];
 
     function paletteBand(v) { return v >= 67 ? 'haut' : v >= 34 ? 'moyen' : 'bas'; }
@@ -1376,25 +1931,27 @@
     function buildFeedbackHTML() {
       const dom = state.profils_dominants;
       const ang = state.angles_morts;
-      const nom = id => NOM_ENJEUX_AFFICHE[id];
+      const nom = nomEnjeu;
+      const T = ui();
+      const fb = feedbackLangue();
 
       // — Synthèse : profil global —
-      const profilGlobal = `Vos réponses dessinent une carte personnelle. Vos terrains les plus investis : <strong>${nom(dom[0])}</strong> et <strong>${nom(dom[1])}</strong> — des points d'appui sur lesquels la formation pourra prendre élan. Vos enjeux les moins explorés : <strong>${nom(ang[0])}</strong> et <strong>${nom(ang[1])}</strong> — non pas des lacunes, mais des opportunités que les deux journées viendront ouvrir. Aucun profil n'est complet, et c'est justement ce qui rend la formation utile.`;
+      const profilGlobal = T.profilGlobal(nom(dom[0]), nom(dom[1]), nom(ang[0]), nom(ang[1]));
 
       // — Points d'appui (2 scores les plus hauts) —
       const appuis = dom.map(id => `
         <h3>${nom(id)} · ${state.scores_normalises[id]}%</h3>
-        <p>${FEEDBACK[id].appui}</p>
+        <p>${fb[id].appui}</p>
       `).join('');
 
       // — Angles morts (2 scores les plus bas) —
       const morts = ang.map(id => `
         <h3>${nom(id)} · ${state.scores_normalises[id]}%</h3>
-        <p>${FEEDBACK[id].angleMort}</p>
+        <p>${fb[id].angleMort}</p>
       `).join('');
 
       const noteEC = ang.includes('esprit_critique')
-        ? `<p><em>L'esprit critique figure parmi vos angles morts : c'est le fil conducteur de toute la formation, donnez-y une attention prioritaire.</em></p>`
+        ? `<p><em>${T.noteEC}</em></p>`
         : '';
 
       // — Feedback enjeu par enjeu (les 7, dans l'ordre fixe) —
@@ -1402,22 +1959,22 @@
         const v = state.scores_normalises[id] || 0;
         return `
           <h3>${nom(id)} · ${v}%</h3>
-          <p>${FEEDBACK[id].bands[paletteBand(v)]}</p>
+          <p>${fb[id].bands[paletteBand(v)]}</p>
         `;
       }).join('');
 
       return `
-        <h2>Votre profil en un coup d'œil</h2>
+        <h2>${T.hProfil}</h2>
         <p>${profilGlobal}</p>
 
-        <h2>Vos points d'appui</h2>
+        <h2>${T.hAppuis}</h2>
         ${appuis}
 
-        <h2>Vos angles morts</h2>
+        <h2>${T.hMorts}</h2>
         ${morts}
         ${noteEC}
 
-        <h2>Enjeu par enjeu</h2>
+        <h2>${T.hParEnjeu}</h2>
         ${parEnjeu}
       `;
     }
@@ -1437,7 +1994,7 @@
     function progress(step, total) {
       const pct = Math.round((step / total) * 100);
       return `
-    <div class="progress-label">Étape ${step} / ${total}</div>
+    <div class="progress-label">${ui().etape} ${step} / ${total}</div>
     <div class="progress-bar-container"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
   `;
     }
@@ -1457,39 +2014,36 @@
 
     /* ----- Écran 0 : Consentement ----- */
     function renderEcranConsentement() {
+      const T = ui();
       app.innerHTML = `
     <div class="ecran">
-      <div class="surtitre">Formation FWB — Enseignement secondaire</div>
-      <h1>Quel utilisateur·rice d'IA es-tu?</h1>
-      <div class="surtitre" style="color:var(--retro-teal);">Analysez votre rapport à l'IA</div>
+      <div class="surtitre">${T.surtitreAccueil}</div>
+      <h1>${T.titreAccueil}</h1>
+      <div class="surtitre" style="color:var(--retro-teal);">${T.accroche}</div>
 
       <p class="intro-text" style="margin-top:24px;">
-        Ce questionnaire n'est pas un test. Il sert à <strong>révéler votre profil d'utilisateur·rice de l'IA</strong> —
-        ce que vous maîtrisez déjà, ce que vous mettez de côté, et ce que vous venez chercher ici.
-        <br><em>Répondez vite. Votre première réaction compte plus que votre réponse réfléchie.</em>
+        ${T.intro}
       </p>
 
       ${separateur('✿')}
 
-      <h2 style="font-size:18px;">Information sur l'usage de vos données</h2>
+      <h2 style="font-size:18px;">${T.titreDonnees}</h2>
       <div class="consent-box">
-        <p style="margin-top:0;">Ce questionnaire traite vos réponses de la façon suivante :</p>
+        <p style="margin-top:0;">${T.introDonnees}</p>
         <ul>
-          <li>Tout se passe <strong>dans votre navigateur</strong>. Vos réponses ne sont jamais envoyées ni stockées sur un serveur.</li>
-          <li>Votre profil, vos scores et vos feedbacks sont <strong>calculés localement et instantanément</strong>, sans aucune connexion à un service tiers.</li>
-          <li>Aucune donnée personnelle (nom, email, établissement) n'est collectée.</li>
+          ${T.donnees.map(d => `<li>${d}</li>`).join('\n          ')}
         </ul>
       </div>
 
       <label class="checkbox-row">
         <input type="checkbox" id="consent-cb" ${state.consentement ? 'checked' : ''}>
         <span class="checkbox-custom"></span>
-        <span>J'ai lu et j'accepte les conditions d'utilisation de mes données.</span>
+        <span>${T.consentement}</span>
       </label>
 
       <div class="button-row">
         <button class="btn-primary" id="btn-start" ${state.consentement ? '' : 'disabled'}>
-          <span class="btn-label">Je commence le questionnaire</span>
+          <span class="btn-label">${T.commencer}</span>
           <span class="btn-icon">→</span>
         </button>
       </div>
@@ -1512,7 +2066,7 @@
     function renderEcranQuestion(idx) {
       const total = state.quizOrder.length;
       const qid = state.quizOrder[idx];
-      const q = QUESTIONS[qid];
+      const q = texteQuestion(qid);
       const cur = state.reponses[qid];
       app.innerHTML = `
     <div class="ecran">
@@ -1535,7 +2089,7 @@
         </div>
       </div>
       <div class="button-row" style="justify-content:flex-start;">
-        ${idx > 0 ? `<button class="btn-secondary" id="btn-prev">← Précédent</button>` : ''}
+        ${idx > 0 ? `<button class="btn-secondary" id="btn-prev">${ui().precedent}</button>` : ''}
       </div>
     </div>
   `;
@@ -1561,45 +2115,46 @@
       const scoresList = Object.entries(state.scores_normalises).map(([id, val]) => `
     <div class="score-row">
       <div class="score-row-head">
-        <span class="nom">${NOM_ENJEUX_AFFICHE[id]}</span>
+        <span class="nom">${nomEnjeu(id)}</span>
         <span class="val">${val}%</span>
       </div>
       <div class="score-bar-bg"><div class="score-bar-fill" style="width:${val}%"></div></div>
     </div>
   `).join('');
 
-      const dom = state.profils_dominants.map(id => NOM_ENJEUX_AFFICHE[id]).join(' · ');
-      const ang = state.angles_morts.map(id => NOM_ENJEUX_AFFICHE[id]).join(' · ');
+      const dom = state.profils_dominants.map(nomEnjeu).join(' · ');
+      const ang = state.angles_morts.map(nomEnjeu).join(' · ');
+      const T = ui();
 
       app.innerHTML = `
     <div class="ecran">
-      <div class="surtitre">Votre rapport personnel</div>
-      <h1>Votre profil d'utilisateur·rice de l'IA</h1>
+      <div class="surtitre">${T.surtitreRapport}</div>
+      <h1>${T.titreRapport}</h1>
       ${separateur('✾')}
 
       <div class="rapport-columns">
         <div class="col-gauche">
           <div>
-            <h2 style="font-size:16px;">Cartographie</h2>
+            <h2 style="font-size:16px;">${T.cartographie}</h2>
             <div class="radar-wrap">${radarSvg}</div>
           </div>
           <div>
-            <h2 style="font-size:16px;">Vos scores</h2>
+            <h2 style="font-size:16px;">${T.vosScores}</h2>
             <div class="scores-list">${scoresList}</div>
           </div>
           <div class="badges">
             <div class="badge badge-dom">
-              <span class="badge-titre">Profils dominants</span>
+              <span class="badge-titre">${T.profilsDominants}</span>
               ${escapeHtml(dom)}
             </div>
             <div class="badge badge-ang">
-              <span class="badge-titre">Angles morts</span>
+              <span class="badge-titre">${T.anglesMorts}</span>
               ${escapeHtml(ang)}
             </div>
           </div>
         </div>
         <div class="col-droite">
-          <h2 style="font-size:16px;">Lecture personnalisée</h2>
+          <h2 style="font-size:16px;">${T.lecture}</h2>
           <div class="rapport-container" id="rapport-content">
             ${buildFeedbackHTML()}
           </div>
@@ -1607,8 +2162,8 @@
       </div>
 
       <div class="button-row no-print">
-        <button class="btn-secondary" id="btn-print">Imprimer / PDF</button>
-        <button class="btn-secondary" id="btn-restart">Recommencer</button>
+        <button class="btn-secondary" id="btn-print">${T.imprimer}</button>
+        <button class="btn-secondary" id="btn-restart">${T.recommencer}</button>
       </div>
     </div>
   `;
@@ -1623,7 +2178,7 @@
        ========================================================== */
     function buildRadarSVG() {
       const ids = ['ethique', 'juridique', 'ecologique', 'esprit_critique', 'cybersecurite', 'democratique', 'geopolitique'];
-      const labels = ids.map(i => NOM_ENJEUX_AFFICHE[i]);
+      const labels = ids.map(nomEnjeu);
       const values = ids.map(i => state.scores_normalises[i] || 0);
       const N = ids.length;
       const cx = 200, cy = 200, R = 140;
@@ -1667,7 +2222,7 @@
       }
 
       return `
-    <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Radar des enjeux">
+    <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${ui().radarAria}">
       ${webs}
       ${axes}
       <polygon points="${polyPts.join(' ')}" fill="rgba(18,118,118,0.25)" stroke="var(--retro-teal)" stroke-width="2"/>
@@ -1695,6 +2250,7 @@
       state.quizOrder = ids;
     })();
 
+    appliquerLangue(state.lang);
     render();
   </script>
 </body>
